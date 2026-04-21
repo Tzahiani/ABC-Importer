@@ -228,7 +228,7 @@ export default function App() {
           <h1 className="hero-logo-heading">
             <img
               className="hero-logo"
-              src="/brand/ABC-NoteMate_clear.png"
+              src={`${import.meta.env.BASE_URL}brand/ABC-NoteMate_clear.png`}
               alt="ABC NoteMate"
               decoding="async"
             />
