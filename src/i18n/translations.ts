@@ -37,6 +37,15 @@ const STR = {
     en: "No MIDI available — try again after converting",
   },
   recentFiles: { he: "קבצים אחרונים", en: "Recent files" },
+  historyLocalLabel: { he: "פרופיל היסטוריה מקומית", en: "Local history profile" },
+  historyLocalHint: {
+    he: "ההיסטוריה נשמרת רק במכשיר ובדפדפן הזה ולא נשלחת לשרת. אנשים במכשירים שונים לא רואים זה את זה. אם כמה אנשים משתמשים באותו דפדפן, בחרו פרופיל שונה לכל אחד.",
+    en: "History stays on this device and browser only—nothing is sent to a server. People on other devices won’t see each other’s list. If several people share this browser, pick a different profile for each person.",
+  },
+  historyProfileP1: { he: "משתמש 1 (ברירת מחדל)", en: "Profile 1 (default)" },
+  historyProfileP2: { he: "משתמש 2", en: "Profile 2" },
+  historyProfileP3: { he: "משתמש 3", en: "Profile 3" },
+  historyProfileP4: { he: "משתמש 4", en: "Profile 4" },
   footer: {
     he: "יש המרות שלא ממפות אחד-לאחד ל-MusicXML — תמיד אפשר לשמור ולבדוק ב-MuseScore. לפיתוח: לוגים בקונסולה בלבד.",
     en: "Some conversions don’t map one-to-one to MusicXML — save and check in MuseScore. Dev: logs in the console only.",

@@ -9,39 +9,15 @@ import {
   type AbcPreview,
 } from "./conversion";
 import { useI18n } from "./i18n";
+import {
+  HISTORY_PROFILE_IDS,
+  loadHistory,
+  pushHistory,
+  type HistoryProfileId,
+  getActiveProfileId,
+  setActiveProfileId,
+} from "./historyStorage";
 import "./App.css";
-
-const HISTORY_KEY = "abc-muse-app-history-v1";
-const MAX_HISTORY = 12;
-
-type HistoryEntry = {
-  id: string;
-  label: string;
-  at: string;
-  snippet: string;
-};
-
-function loadHistory(): HistoryEntry[] {
-  try {
-    const raw = localStorage.getItem(HISTORY_KEY);
-    if (!raw) return [];
-    const v = JSON.parse(raw) as HistoryEntry[];
-    return Array.isArray(v) ? v : [];
-  } catch {
-    return [];
-  }
-}
-
-function pushHistory(entry: Omit<HistoryEntry, "at"> & { at?: string }) {
-  const list = loadHistory();
-  const next: HistoryEntry = {
-    ...entry,
-    at: entry.at ?? new Date().toISOString(),
-  };
-  const filtered = list.filter((x) => x.id !== next.id);
-  const merged = [next, ...filtered].slice(0, MAX_HISTORY);
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(merged));
-}
 
 function errText(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -66,7 +42,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ConvertResult | null>(null);
   const [highlightLine, setHighlightLine] = useState<number | undefined>();
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [history, setHistory] = useState(() => loadHistory());
+  const [historyProfile, setHistoryProfile] = useState<HistoryProfileId>(() => getActiveProfileId());
   const [uiError, setUiError] = useState<string | null>(null);
   const [uiInfo, setUiInfo] = useState<string | null>(null);
 
@@ -74,7 +51,7 @@ export default function App() {
 
   useEffect(() => {
     setHistory(loadHistory());
-  }, []);
+  }, [historyProfile]);
 
   const tuneCount = useMemo(() => countTunes(abcText), [abcText]);
 
@@ -395,10 +372,41 @@ export default function App() {
 
       {livePreview && <PreviewCard p={livePreview} />}
 
-      {history.length > 0 && (
-        <section className="panel history" aria-labelledby="hist">
+      <section className="panel history" aria-labelledby="hist">
+        <div className="history-head">
           <h2 id="hist">{t("recentFiles")}</h2>
-          <ul>
+          <div className="history-profile-wrap">
+            <label className="history-profile-label" htmlFor="hist-profile">
+              {t("historyLocalLabel")}
+            </label>
+            <select
+              id="hist-profile"
+              className="history-profile-select"
+              value={historyProfile}
+              onChange={(e) => {
+                const id = e.target.value as HistoryProfileId;
+                setActiveProfileId(id);
+                setHistoryProfile(id);
+              }}
+            >
+              {(
+                [
+                  "historyProfileP1",
+                  "historyProfileP2",
+                  "historyProfileP3",
+                  "historyProfileP4",
+                ] as const
+              ).map((labelKey, i) => (
+                <option key={HISTORY_PROFILE_IDS[i]} value={HISTORY_PROFILE_IDS[i]}>
+                  {t(labelKey)}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <p className="history-local-hint">{t("historyLocalHint")}</p>
+        {history.length > 0 ? (
+          <ul className="history-list">
             {history.map((h) => (
               <li key={h.id}>
                 <button
@@ -415,8 +423,8 @@ export default function App() {
               </li>
             ))}
           </ul>
-        </section>
-      )}
+        ) : null}
+      </section>
 
       <footer className="foot">
         <p className="foot-hint muted">{t("footer")}</p>
