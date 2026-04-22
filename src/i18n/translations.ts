@@ -76,6 +76,31 @@ const STR = {
   },
   batchSaved: { he: "נשמר: {{path}}", en: "Saved: {{path}}" },
   batchNotConverted: { he: "לא הומר: {{path}}", en: "Not converted: {{path}}" },
+  statsOwnerTitle: { he: "סטטיסטיקות (למנהל בלבד)", en: "Statistics (owner only)" },
+  statsOwnerIntro: {
+    he: "הזינו את מפתח הצפייה האישי שלכם (לא נשמר באפליקציה). אף משתמש אחר לא רואה מסך זה אלא אם יודע את הקיצור ואת המפתח.",
+    en: "Enter your private view key (it is not stored in the app). Nobody else sees this unless they know the shortcut and your key.",
+  },
+  statsOwnerTokenLabel: { he: "מפתח צפייה", en: "View key" },
+  statsOwnerTokenPlaceholder: { he: "הדבקה כאן", en: "Paste here" },
+  statsOwnerButton: { he: "טען מונה", en: "Load count" },
+  statsOwnerClose: { he: "סגירה", en: "Close" },
+  statsOwnerLoading: { he: "טוען…", en: "Loading…" },
+  statsOwnerNotConfigured: {
+    he: "לא הוגדרה כתובת לצפייה בסטטיסטיקה (VITE_STATS_READER_URL). ראו קובץ tools/stats-counter-worker.js להקמת שרת מונים.",
+    en: "Stats reader URL is not configured (VITE_STATS_READER_URL). See tools/stats-counter-worker.js to set up a counter backend.",
+  },
+  statsOwnerNeedToken: { he: "נא להזין מפתח צפייה.", en: "Please enter the view key." },
+  statsOwnerLoadFailed: { he: "הטעינה נכשלה.", en: "Failed to load." },
+  statsOwnerBadResponse: { he: "תשובה לא צפויה מהשרת.", en: "Unexpected server response." },
+  statsOwnerVisits: {
+    he: "ספירת ביקורים (מצטבר): {{n}}",
+    en: "Total visits (approx.): {{n}}",
+  },
+  statsOwnerShortcutHint: {
+    he: "קיצור לפתיחת חלון זה: Ctrl+Shift+M — או שלוש לחיצות מהירות על הלוגו.",
+    en: "Shortcut: Ctrl+Shift+M — or three quick clicks on the logo.",
+  },
 } as const;
 
 export type TranslationKey = keyof typeof STR;

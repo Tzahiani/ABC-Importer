@@ -33,10 +33,13 @@ jobs:
       - name: Install
         run: npm ci
 
+      # Optional visit stats: add repo secrets VITE_STATS_INGEST_URL and VITE_STATS_READER_URL (see tools/stats-counter-worker.js).
       - name: Build (with base path for project site)
         run: npm run build:web
         env:
           VITE_BASE_PATH: /ABC-Importer/
+          VITE_STATS_INGEST_URL: ${{ secrets.VITE_STATS_INGEST_URL }}
+          VITE_STATS_READER_URL: ${{ secrets.VITE_STATS_READER_URL }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

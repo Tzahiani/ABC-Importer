@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import {
@@ -17,6 +17,8 @@ import {
   getActiveProfileId,
   setActiveProfileId,
 } from "./historyStorage";
+import { OwnerStatsModal } from "./stats/OwnerStatsModal";
+import { sendOptionalVisitPing } from "./stats/visitPing";
 import "./App.css";
 
 function errText(e: unknown): string {
@@ -46,12 +48,40 @@ export default function App() {
   const [historyProfile, setHistoryProfile] = useState<HistoryProfileId>(() => getActiveProfileId());
   const [uiError, setUiError] = useState<string | null>(null);
   const [uiInfo, setUiInfo] = useState<string | null>(null);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const logoClickTimes = useRef<number[]>([]);
 
   const dateLocale = locale === "he" ? "he-IL" : "en-US";
 
   useEffect(() => {
+    sendOptionalVisitPing();
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "m") {
+        e.preventDefault();
+        setStatsOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
     setHistory(loadHistory());
   }, [historyProfile]);
+
+  const onLogoQuickClicks = () => {
+    const now = Date.now();
+    const recent = logoClickTimes.current.filter((t) => now - t < 1600);
+    recent.push(now);
+    logoClickTimes.current = recent;
+    if (recent.length >= 3) {
+      logoClickTimes.current = [];
+      setStatsOpen(true);
+    }
+  };
 
   const tuneCount = useMemo(() => countTunes(abcText), [abcText]);
 
@@ -231,6 +261,7 @@ export default function App() {
               src={`${import.meta.env.BASE_URL}brand/ABC-NoteMate_clear.png`}
               alt="ABC NoteMate"
               decoding="async"
+              onPointerUp={onLogoQuickClicks}
             />
           </h1>
           <button
@@ -433,6 +464,8 @@ export default function App() {
           <p className="foot-ip">{t("footerIpNotice")}</p>
         </div>
       </footer>
+
+      <OwnerStatsModal open={statsOpen} onClose={() => setStatsOpen(false)} />
     </div>
   );
 }
