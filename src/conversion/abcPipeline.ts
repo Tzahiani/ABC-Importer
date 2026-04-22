@@ -55,20 +55,70 @@ export function normalizeHashSharpsToAbcCaret(abc: string): string {
 }
 
 /**
+ * MuseScore / אוספים מייצאים לעיתים %%score (V1) + שורת V:V1 clef=treble לפני התווים.
+ * abcjs (parseOnly) יוצר tune.lines ריק בפריסה כזו — בלי staff אין MusicXML.
+ * כאן מסירים רק **פריסת score חד־קולית** (בלי פסיק/& בשורת %%score) ושורות V: לפני שורת המוזיקה הראשונה.
+ */
+export function stripSingleVoiceScoreLayout(abc: string): string {
+  let s = abc.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const lines = s.split("\n");
+  const kept: string[] = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (/^%%score\s*\(/i.test(trimmed)) {
+      const inner = trimmed
+        .replace(/^%%score\s*\(\s*/i, "")
+        .replace(/\)\s*$/i, "")
+        .trim();
+      if (inner && !/[,&]/.test(inner)) continue;
+    }
+    if (/^%%score\s*\{/i.test(trimmed)) {
+      const inner = trimmed
+        .replace(/^%%score\s*\{\s*/i, "")
+        .replace(/\}\s*$/i, "")
+        .trim();
+      if (inner && !/[,&]/.test(inner)) continue;
+    }
+    kept.push(line);
+  }
+  s = kept.join("\n");
+
+  const rows = s.split("\n");
+  const isMusicLine = (l: string) => {
+    const t = l.trim();
+    if (!t || t.startsWith("%")) return false;
+    if (!t.includes("|")) return false;
+    return /[A-Ga-gZz]/.test(t) || /^\[[\w:/!]+\]/.test(t);
+  };
+  const musicIdx = rows.findIndex(isMusicLine);
+  if (musicIdx <= 0) return s;
+  const head = rows.slice(0, musicIdx).filter((l) => !/^\s*V:\S/i.test(l));
+  return [...head, ...rows.slice(musicIdx)].join("\n");
+}
+
+/**
  * abcjs משאיר את `tune.lines` ריק אם יש **שורה ריקה מיד אחרי שדה כותרת** (למשל אחרי `K:`)
  * ולפני שורת התווים הראשונה — מצב נפוץ בהדבקה מספרים/אוספים.
  * מסירים רק רווחים כאלה כשהשורה הבאה אינה התחלת לחן חדש (`X:`).
  */
-export function normalizeAbcForAbcjs(abc: string): string {
-  let s = abc.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+function collapseBlankAfterHeaderFields(s: string): string {
+  let out = s;
   const fields = ["K", "L", "M", "P", "I"];
   for (const f of fields) {
     const re = new RegExp(
       `(^${f}:\\s*[^\\n]+)\\n(?:\\n)+(?!X:)`,
       "gm",
     );
-    s = s.replace(re, "$1\n");
+    out = out.replace(re, "$1\n");
   }
+  return out;
+}
+
+export function normalizeAbcForAbcjs(abc: string): string {
+  let s = abc.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  s = collapseBlankAfterHeaderFields(s);
+  s = stripSingleVoiceScoreLayout(s);
+  s = collapseBlankAfterHeaderFields(s);
   s = normalizeHashSharpsToAbcCaret(s);
   return s;
 }

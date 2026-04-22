@@ -24,6 +24,30 @@ describe("normalizeHashSharpsToAbcCaret", () => {
   });
 });
 
+describe("stripSingleVoiceScoreLayout", () => {
+  it("allows MuseScore-style %%score (V1) + V: to convert", () => {
+    const raw = `X:1
+T:Star
+M:4/4
+L:1/4
+K:Bb
+
+%%score (V1)
+V:V1 clef=treble
+
+B,4 F |
+E D C |
+`;
+    const n = normalizeAbcForAbcjs(raw);
+    expect(n).not.toMatch(/%%score/);
+    expect(n).not.toMatch(/^V:/m);
+    const r = convertAbcString(raw);
+    expect(r.success).toBe(true);
+    expect(r.musicXml).toBeDefined();
+    expect(r.musicXml).toContain("score-partwise");
+  });
+});
+
 describe("normalizeAbcForAbcjs", () => {
   it("fixes blank line after K: so abcjs emits staff lines", () => {
     const raw = `X:1
